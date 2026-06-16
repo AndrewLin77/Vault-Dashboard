@@ -1,5 +1,3 @@
-import { CURATOR_SUGGESTIONS } from '../lib/morpho';
-
 export default function CuratorInput({
   value,
   onChange,
@@ -41,20 +39,6 @@ export default function CuratorInput({
             autoComplete="off"
           />
         </label>
-
-        <div className="curator-suggestions">
-          {CURATOR_SUGGESTIONS.map((curator) => (
-            <button
-              key={curator}
-              type="button"
-              className="suggestion-chip"
-              disabled={loading}
-              onClick={() => onSelectSuggestion(curator)}
-            >
-              {curator}
-            </button>
-          ))}
-        </div>
 
         <div className="actions-row">
           <button type="submit" className="primary-button" disabled={loading || !value.trim()}>
