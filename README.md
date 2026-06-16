@@ -1,16 +1,17 @@
 # Morpho Curator Vault Dashboard
 
-A React dashboard for exploring Morpho curator vaults. Enter a curator address to view their vaults' total assets, APY, allocation breakdowns, and recent activity (deposits, withdrawals, rebalancing).
+A React dashboard for tracking Morpho curator vaults. Search any curator by name or address to view their listed vaults — TVL, APY, market allocation breakdowns, and recent activity (deposits, withdrawals, rebalancing). Defaults to **AlphaPing** on load.
 
 ---
 
 ## Features
 
-- **Curator lookup** — input any curator address to fetch all vaults they manage
-- **Vault overview** — total assets deposited, net APY, utilization rate, and market count per vault
+- **Curator search** — look up any Morpho curator by name (e.g. `Gauntlet`, `AlphaPing`) or `0x` address via the Morpho API
+- **Quick suggestions** — one-click chips for popular curators
+- **Vault overview** — USD TVL, net APY (`avgNetApy`), and active market count per vault (V1 + V2)
 - **Allocation breakdown** — pie chart + bar list showing each vault's market allocations by supply weight
 - **Activity feed** — recent deposits, withdrawals, and rebalancing events sorted by timestamp
-- **Aggregate stats** — weighted avg APY, 24h deposit/withdrawal volume across all curator vaults
+- **Aggregate stats** — curator AUM, weighted avg APY, 24h deposit/withdrawal volume across listed vaults
 
 ---
 

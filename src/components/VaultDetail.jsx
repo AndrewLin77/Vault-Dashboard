@@ -1,7 +1,7 @@
 import AllocationChart from './AllocationChart';
 import ActivityFeed from './ActivityFeed';
-import { getAllocationRows, getTokenDecimals, getTokenSymbol } from '../lib/morpho';
-import { formatTokenAmount, formatPercent } from '../lib/format';
+import { getAllocationRows, getTokenDecimals, getTokenSymbol, getVaultApy } from '../lib/morpho';
+import { formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
 
 export default function VaultDetail({ vault, activity }) {
   if (!vault) {
@@ -22,16 +22,17 @@ export default function VaultDetail({ vault, activity }) {
         </div>
         <div className="detail-summary">
           <div>
-            <span>Total assets</span>
-            <strong>{formatTokenAmount(vault?.state?.totalAssets, decimals)} {symbol}</strong>
+            <span>TVL</span>
+            <strong>{formatUsd(Number(vault?.state?.totalAssetsUsd ?? 0))}</strong>
+            <small>{formatTokenAmount(vault?.state?.totalAssets, decimals)} {symbol}</small>
           </div>
           <div>
             <span>APY</span>
-            <strong>{formatPercent(Number(vault?.state?.netApy ?? 0))}</strong>
+            <strong>{formatPercent(getVaultApy(vault))}</strong>
           </div>
           <div>
-            <span>Utilization</span>
-            <strong>{(Number(vault?.state?.utilization ?? 0) * 100).toFixed(1)}%</strong>
+            <span>Markets</span>
+            <strong>{allocations.length}</strong>
           </div>
         </div>
       </div>

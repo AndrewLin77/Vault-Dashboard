@@ -3,23 +3,21 @@ import CuratorInput from './components/CuratorInput';
 import OverviewStats from './components/OverviewStats';
 import VaultGrid from './components/VaultGrid';
 import VaultDetail from './components/VaultDetail';
+import { DEFAULT_CURATOR } from './config';
 import { useCuratorVaults } from './hooks/useCuratorVaults';
 import { useVaultActivities } from './hooks/useVaultActivity';
 import {
   calculateAggregateStats,
   normalizeVaultActivity,
-  resolveCuratorInput,
 } from './lib/morpho';
 
-const INITIAL_INPUT = 'Gauntlet';
-
 export default function App() {
-  const [input, setInput] = useState(INITIAL_INPUT);
-  const [curatorAddress, setCuratorAddress] = useState(resolveCuratorInput(INITIAL_INPUT));
+  const [input, setInput] = useState(DEFAULT_CURATOR);
+  const [curatorQuery, setCuratorQuery] = useState(DEFAULT_CURATOR);
   const [selectedVaultAddress, setSelectedVaultAddress] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  const vaultsQuery = useCuratorVaults(curatorAddress);
+  const vaultsQuery = useCuratorVaults(curatorQuery);
   const vaults = vaultsQuery.data?.vaults ?? [];
   const activityQueries = useVaultActivities(vaults);
 
@@ -40,20 +38,30 @@ export default function App() {
     [activityQueries, vaults],
   );
 
-  const stats = useMemo(() => calculateAggregateStats(vaults, activitiesByVault), [activitiesByVault, vaults]);
+  const stats = useMemo(
+    () => calculateAggregateStats(vaults, activitiesByVault, vaultsQuery.data?.curatorAum ?? 0),
+    [activitiesByVault, vaults, vaultsQuery.data?.curatorAum],
+  );
   const selectedVault = vaults.find((vault) => vault.address === selectedVaultAddress) ?? vaults[0] ?? null;
   const selectedVaultActivity = selectedVault ? activitiesByVault[selectedVault.address] ?? [] : [];
+  const curatorName = vaultsQuery.data?.curatorName ?? '';
+  const resolvedAddress = vaultsQuery.data?.curatorAddresses?.[0] ?? '';
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const resolved = resolveCuratorInput(input);
-    if (!resolved) {
+  function loadCurator(query) {
+    const trimmed = query.trim();
+    if (!trimmed) {
       setSubmitError('Enter a curator name or address.');
       return;
     }
     setSubmitError('');
-    setCuratorAddress(resolved);
+    setInput(trimmed);
+    setCuratorQuery(trimmed);
     setSelectedVaultAddress('');
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    loadCurator(input);
   }
 
   return (
@@ -68,9 +76,12 @@ export default function App() {
             if (submitError) setSubmitError('');
           }}
           onSubmit={handleSubmit}
+          onSelectSuggestion={loadCurator}
           loading={vaultsQuery.isLoading}
           error={submitError || vaultsQuery.error?.message}
-          resolvedAddress={vaultsQuery.data?.curatorAddresses?.[0] ?? curatorAddress}
+          curatorName={curatorName}
+          resolvedAddress={resolvedAddress}
+          vaultCount={vaults.length}
         />
 
         <OverviewStats
@@ -81,13 +92,13 @@ export default function App() {
 
         {vaultsQuery.isError ? (
           <section className="panel empty-state">
-            Could not load vaults for that curator. Try another address or curator name.
+            Could not load vaults for that curator. Try another name or address.
           </section>
         ) : null}
 
-        {!vaultsQuery.isLoading && vaults.length === 0 && curatorAddress ? (
+        {!vaultsQuery.isLoading && vaults.length === 0 && curatorQuery ? (
           <section className="panel empty-state">
-            No vaults were found for this curator.
+            No listed vaults were found for this curator.
           </section>
         ) : null}
 
@@ -95,8 +106,8 @@ export default function App() {
           <>
             <section className="section-header">
               <div>
-                <p className="eyebrow">Curator vaults</p>
-                <h2>Vault overview</h2>
+                <p className="eyebrow">Vault portfolio</p>
+                <h2>{curatorName ? `${curatorName} vaults` : 'All vaults'}</h2>
               </div>
             </section>
             <VaultGrid

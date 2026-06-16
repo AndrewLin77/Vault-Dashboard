@@ -6,6 +6,16 @@ export function formatCompactNumber(value) {
   }).format(value);
 }
 
+export function formatUsd(value) {
+  if (!Number.isFinite(value)) return '—';
+  return new Intl.NumberFormat('en', {
+    style: 'currency',
+    currency: 'USD',
+    notation: value >= 1_000_000 ? 'compact' : 'standard',
+    maximumFractionDigits: value >= 1_000_000 ? 2 : 0,
+  }).format(value);
+}
+
 export function formatPercent(value) {
   if (!Number.isFinite(value)) return '—';
   return `${(value * 100).toFixed(2)}%`;
