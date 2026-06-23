@@ -7,7 +7,7 @@ A React dashboard for tracking Morpho curator vaults. Browse verified curators, 
 ## Features
 
 - **Curator landing page** — top 20 verified curators ranked by AUM on load
-- **Curator search** — debounced lookup by name or `0x` address via the Morpho API
+- **Curator search** — debounced lookup by name
 - **Shareable routes** — browser back/forward and deep links for curators and vaults
 - **Vault portfolio** — all listed V1 and V2 vaults for a curator in one grid (no pagination)
 - **Per-vault metrics** — USD TVL, current net APY, withdrawable liquidity (% of TVL), and active market count
@@ -16,19 +16,6 @@ A React dashboard for tracking Morpho curator vaults. Browse verified curators, 
 - **On-chain links** — vault addresses link to the correct block explorer (Etherscan, Basescan, Arbiscan, etc.)
 - **Aggregate stats** — vault count, curator AUM / TVL, and TVL-weighted average APY
 
----
-
-## Routes
-
-| Path | Page |
-|---|---|
-| `/` | Curator landing (primary curators + search) |
-| `/curator/:curatorSlug` | Curator vault list and overview stats |
-| `/curator/:curatorSlug/vault/:chainId/:vaultAddress` | Vault detail (allocations + activity) |
-
-`curatorSlug` is the URL-encoded curator name (e.g. `AlphaPing`).
-
----
 
 ## Tech Stack
 
