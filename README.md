@@ -1,6 +1,6 @@
 # Morpho Curator Vault Dashboard
 
-A React dashboard for tracking Morpho curator vaults. Browse verified curators, search by name or address, and drill into listed vaults — TVL, APY, withdrawable liquidity, market allocations, and recent activity.
+A React dashboard for tracking Morpho curator vaults. Browse verified curators, search by name, and drill into listed vaults — TVL, APY, withdrawable liquidity, market allocations, and recent activity.
 
 ---
 
