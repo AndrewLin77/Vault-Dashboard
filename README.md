@@ -155,7 +155,7 @@ Activity is loaded only for the vault being viewed:
 
 - `totalAssets` and `liquidity` are raw token units — divide by the asset's `decimals` before display
 - APY uses **`netApy`** (current rate shown on Morpho), not `avgNetApy` (historical average)
-- **Liquidity** — V1: `liquidity.usd`; V2: `liquidityUsd` (idle assets + liquidity adapter capacity)
+- **Liquidity** — V1: `liquidity.usd`; V2: `liquidityUsd` + `forceDeallocatableLiquidityUsd` (instant + force-deallocate capacity, matching Morpho)
 - Allocation percentages: each market's `supplyAssets` divided by vault `totalAssets`
 - Transaction types: `Deposit`, `Withdrawal`, `Rebalance`
 

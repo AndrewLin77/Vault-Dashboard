@@ -19,6 +19,7 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
   const symbol = getTokenSymbol(vault);
   const allocations = getAllocationRows(vault);
   const { assets: liquidityAssets, usd: liquidityUsd, shareOfTvl } = getVaultLiquidity(vault);
+  const hasNoLiquidity = liquidityUsd <= 0;
 
   return (
     <section className="vault-detail-view">
@@ -59,8 +60,8 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
           </div>
           <div>
             <span>Liquidity</span>
-            <strong>{formatUsd(liquidityUsd)}</strong>
-            <small>
+            <strong className={hasNoLiquidity ? 'liquidity-zero' : undefined}>{formatUsd(liquidityUsd)}</strong>
+            <small className={hasNoLiquidity ? 'liquidity-zero' : undefined}>
               {formatTokenAmount(liquidityAssets, decimals)} {symbol} · {formatPercent(shareOfTvl)} of TVL
             </small>
           </div>

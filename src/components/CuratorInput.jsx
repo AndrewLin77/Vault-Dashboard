@@ -54,7 +54,6 @@ export default function CuratorInput({
           <input
             value={value}
             onChange={(event) => onChange(event.target.value)}
-            placeholder="AlphaPing, Gauntlet, or 0x..."
             spellCheck="false"
             autoComplete="off"
           />

@@ -11,6 +11,7 @@ export default function VaultCard({ vault, onClick }) {
   const liquidity = formatTokenAmount(liquidityAssets, decimals, 2);
   const liquidityUsdFormatted = formatUsd(liquidityUsd);
   const liquidityShare = formatPercent(shareOfTvl);
+  const hasNoLiquidity = liquidityUsd <= 0;
   const marketCount = vault?.state?.allocation?.filter((row) => Number(row?.supplyAssets ?? 0) > 0).length ?? 0;
   const chainId = vault?.chain?.id;
 
@@ -40,8 +41,10 @@ export default function VaultCard({ vault, onClick }) {
           </div>
           <div>
             <span>Liquidity</span>
-            <strong>{liquidityUsdFormatted}</strong>
-            <small>{liquidity} {symbol} · {liquidityShare} of TVL</small>
+            <strong className={hasNoLiquidity ? 'liquidity-zero' : undefined}>{liquidityUsdFormatted}</strong>
+            <small className={hasNoLiquidity ? 'liquidity-zero' : undefined}>
+              {liquidity} {symbol} · {liquidityShare} of TVL
+            </small>
           </div>
           <div>
             <span>Markets</span>

@@ -200,6 +200,8 @@ const CURATOR_VAULTS_V2_QUERY = `
         liquidityUsd
         idleAssets
         idleAssetsUsd
+        forceDeallocatableLiquidity
+        forceDeallocatableLiquidityUsd
         netApy
         avgNetApy
         caps {
@@ -297,9 +299,24 @@ function normalizeVaultV1Item(item) {
   };
 }
 
+function getVaultV2LiquidityTotals(item) {
+  // Morpho V2 UI treats withdrawable liquidity as instant (idle + liquidity adapter)
+  // plus assets reachable via forceDeallocate on liquid adapters.
+  const instantAssets = Number(item.liquidity ?? 0);
+  const instantUsd = Number(item.liquidityUsd ?? 0);
+  const forceAssets = Number(item.forceDeallocatableLiquidity ?? 0);
+  const forceUsd = Number(item.forceDeallocatableLiquidityUsd ?? 0);
+
+  return {
+    liquidityAssets: instantAssets + forceAssets,
+    liquidityUsd: instantUsd + forceUsd,
+  };
+}
+
 function normalizeVaultV2Item(item) {
   const totalAssets = Number(item.totalAssets ?? 0);
   const totalAssetsUsd = Number(item.totalAssetsUsd ?? 0);
+  const liquidityTotals = getVaultV2LiquidityTotals(item);
   const allocation = (item.caps?.items ?? [])
     .filter((cap) => cap.type === 'MarketV1' && Number(cap.allocation ?? 0) > 0)
     .map((cap) => {
@@ -323,8 +340,8 @@ function normalizeVaultV2Item(item) {
     state: {
       totalAssets: item.totalAssets,
       totalAssetsUsd: item.totalAssetsUsd,
-      liquidityAssets: item.liquidity,
-      liquidityUsd: item.liquidityUsd,
+      liquidityAssets: liquidityTotals.liquidityAssets,
+      liquidityUsd: liquidityTotals.liquidityUsd,
       idleAssets: item.idleAssets,
       idleAssetsUsd: item.idleAssetsUsd,
       netApy: item.netApy,

@@ -410,6 +410,17 @@ a {
   color: #4ade80;
 }
 
+.liquidity-zero {
+  color: #f87171;
+}
+
+.vault-metrics strong.liquidity-zero,
+.vault-metrics small.liquidity-zero,
+.detail-summary strong.liquidity-zero,
+.detail-summary small.liquidity-zero {
+  color: #f87171;
+}
+
 .vault-metrics small,
 .detail-summary small {
   display: block;
