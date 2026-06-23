@@ -1,5 +1,13 @@
-import { useQueries } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { fetchVaultActivity } from '../lib/morpho';
+
+export function useVaultActivity(vault) {
+  return useQuery({
+    queryKey: ['vault-activity', vault?.vaultVersion ?? 'v1', vault?.address, vault?.chain?.id],
+    queryFn: () => fetchVaultActivity(vault.address, vault.chain?.id, vault.vaultVersion ?? 'v1'),
+    enabled: Boolean(vault?.address && vault?.chain?.id != null),
+  });
+}
 
 export function useVaultActivities(vaults) {
   return useQueries({

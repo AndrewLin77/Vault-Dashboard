@@ -1,2 +1,1 @@
-export const DEFAULT_CURATOR = 'alphaping';
-export const SHOW_CURATOR_SEARCH = true;
+export const PRIMARY_CURATORS_COUNT = 20;

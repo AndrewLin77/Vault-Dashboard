@@ -1,16 +1,17 @@
 import VaultCard from './VaultCard';
 
-export default function VaultGrid({ vaults, selectedAddress, onSelect }) {
+export default function VaultGrid({ vaults, onVaultSelect }) {
   return (
-    <section className="vault-grid">
-      {vaults.map((vault) => (
-        <VaultCard
-          key={vault.address}
-          vault={vault}
-          selected={selectedAddress === vault.address}
-          onClick={() => onSelect(vault.address)}
-        />
-      ))}
+    <section className="vault-list">
+      <div className="vault-grid">
+        {vaults.map((vault) => (
+          <VaultCard
+            key={`${vault.chain?.id}-${vault.address}`}
+            vault={vault}
+            onClick={() => onVaultSelect(vault)}
+          />
+        ))}
+      </div>
     </section>
   );
 }

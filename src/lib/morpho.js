@@ -7,7 +7,59 @@ export const CURATOR_DIRECTORY = {
   steakhouse: '0xBEEF69Ac7870777598A04B2bd4771c71212E6aBc',
 };
 
-export const CURATOR_SUGGESTIONS = ['AlphaPing', 'Gauntlet', 'Steakhouse', 'Re7 Labs'];
+const CURATOR_LIST_QUERY = `
+  query CuratorList($first: Int!, $where: CuratorFilters) {
+    curators(first: $first, where: $where) {
+      items {
+        name
+        image
+        verified
+        state {
+          aum
+        }
+        addresses {
+          address
+          chainId
+        }
+      }
+    }
+  }
+`;
+
+function normalizeCuratorItem(item) {
+  return {
+    name: item?.name ?? 'Unknown curator',
+    image: item?.image ?? null,
+    verified: Boolean(item?.verified),
+    aum: Number(item?.state?.aum ?? 0),
+    addresses: item?.addresses ?? [],
+    primaryAddress: item?.addresses?.[0]?.address ?? '',
+  };
+}
+
+function sortCuratorsByAum(curators) {
+  return [...curators].sort((left, right) => right.aum - left.aum);
+}
+
+export async function fetchPrimaryCurators(limit = 20) {
+  const data = await fetchGraphQL(CURATOR_LIST_QUERY, {
+    first: 100,
+    where: { verified: true },
+  });
+  const items = (data?.curators?.items ?? []).map(normalizeCuratorItem);
+  return sortCuratorsByAum(items).slice(0, limit);
+}
+
+export async function searchCurators(search, limit = 20) {
+  const trimmed = search.trim();
+  if (!trimmed) return [];
+
+  const data = await fetchGraphQL(CURATOR_LIST_QUERY, {
+    first: limit,
+    where: { search: trimmed },
+  });
+  return sortCuratorsByAum((data?.curators?.items ?? []).map(normalizeCuratorItem));
+}
 
 function isAddress(value) {
   return /^0x[a-fA-F0-9]{40}$/.test(value);
@@ -353,11 +405,12 @@ export async function fetchVaultActivity(vaultAddress, chainId, vaultVersion = '
 }
 
 export function getVaultApy(vault) {
-  const avgNetApy = vault?.state?.avgNetApy;
-  if (avgNetApy != null && Number.isFinite(Number(avgNetApy))) {
-    return Number(avgNetApy);
+  // Morpho vault pages show current netApy, not the historical avgNetApy average.
+  const netApy = vault?.state?.netApy ?? vault?.netApy;
+  if (netApy != null && Number.isFinite(Number(netApy))) {
+    return Number(netApy);
   }
-  return Number(vault?.state?.netApy ?? 0);
+  return Number(vault?.state?.avgNetApy ?? vault?.avgNetApy ?? 0);
 }
 
 export function getTokenDecimals(vault) {
