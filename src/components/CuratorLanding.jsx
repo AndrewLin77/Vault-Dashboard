@@ -36,7 +36,7 @@ export default function CuratorLanding({ onSelectCurator }) {
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search curators by name or address"
+          placeholder="Search curators by name"
           spellCheck="false"
           autoComplete="off"
         />

@@ -1,17 +1,10 @@
 import { Link } from 'react-router-dom';
 import AllocationChart from './AllocationChart';
 import ActivityFeed from './ActivityFeed';
-import { getAllocationRows, getTokenDecimals, getTokenSymbol, getVaultApy } from '../lib/morpho';
+import AddressLink from './AddressLink';
+import { getAllocationRows, getTokenDecimals, getTokenSymbol, getVaultApy, getVaultLiquidity } from '../lib/morpho';
 import { formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
-
-function morphoVaultUrl(vault) {
-  const chainId = vault?.chain?.id ?? 1;
-  const address = vault?.address ?? '';
-  if (vault?.vaultVersion === 'v2') {
-    return `https://app.morpho.org/vault?vault=${address}&chain=${chainId}`;
-  }
-  return `https://app.morpho.org/vault?vault=${address}&chain=${chainId}`;
-}
+import { getExplorerName } from '../lib/explorer';
 
 export default function VaultDetail({ vault, curatorName, activity, activityLoading, backTo }) {
   if (!vault) {
@@ -25,6 +18,7 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
   const decimals = getTokenDecimals(vault);
   const symbol = getTokenSymbol(vault);
   const allocations = getAllocationRows(vault);
+  const { assets: liquidityAssets, usd: liquidityUsd, shareOfTvl } = getVaultLiquidity(vault);
 
   return (
     <section className="vault-detail-view">
@@ -47,15 +41,10 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
             {vault.chain?.id ? <span className="vault-tag">Chain {vault.chain.id}</span> : null}
           </div>
           <h1>{vault.name}</h1>
-          <p className="muted vault-address-full">{vault.address}</p>
-          <a
-            className="morpho-link"
-            href={morphoVaultUrl(vault)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            View on Morpho ↗
-          </a>
+          <p className="vault-address-full">
+            <AddressLink address={vault.address} chainId={vault.chain?.id} />
+          </p>
+          <p className="explorer-hint muted">View on {getExplorerName(vault.chain?.id)} ↗</p>
         </div>
 
         <div className="detail-summary">
@@ -67,6 +56,13 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
           <div>
             <span>APY</span>
             <strong className="apy-value">{formatPercent(getVaultApy(vault))}</strong>
+          </div>
+          <div>
+            <span>Liquidity</span>
+            <strong>{formatUsd(liquidityUsd)}</strong>
+            <small>
+              {formatTokenAmount(liquidityAssets, decimals)} {symbol} · {formatPercent(shareOfTvl)} of TVL
+            </small>
           </div>
           <div>
             <span>Markets</span>

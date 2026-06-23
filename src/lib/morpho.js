@@ -151,6 +151,10 @@ const CURATOR_VAULTS_QUERY = `
           symbol
           decimals
         }
+        liquidity {
+          underlying
+          usd
+        }
         state {
           totalAssets
           totalAssetsUsd
@@ -192,6 +196,10 @@ const CURATOR_VAULTS_V2_QUERY = `
         }
         totalAssets
         totalAssetsUsd
+        liquidity
+        liquidityUsd
+        idleAssets
+        idleAssetsUsd
         netApy
         avgNetApy
         caps {
@@ -281,6 +289,11 @@ function normalizeVaultV1Item(item) {
   return {
     ...item,
     vaultVersion: 'v1',
+    state: {
+      ...item.state,
+      liquidityAssets: item.liquidity?.underlying,
+      liquidityUsd: item.liquidity?.usd,
+    },
   };
 }
 
@@ -310,6 +323,10 @@ function normalizeVaultV2Item(item) {
     state: {
       totalAssets: item.totalAssets,
       totalAssetsUsd: item.totalAssetsUsd,
+      liquidityAssets: item.liquidity,
+      liquidityUsd: item.liquidityUsd,
+      idleAssets: item.idleAssets,
+      idleAssetsUsd: item.idleAssetsUsd,
       netApy: item.netApy,
       avgNetApy: item.avgNetApy,
       allocation,
@@ -411,6 +428,23 @@ export function getVaultApy(vault) {
     return Number(netApy);
   }
   return Number(vault?.state?.avgNetApy ?? vault?.avgNetApy ?? 0);
+}
+
+export function getVaultLiquidity(vault) {
+  const assets = Number(
+    vault?.state?.liquidityAssets
+    ?? vault?.liquidity?.underlying
+    ?? 0,
+  );
+  const usd = Number(
+    vault?.state?.liquidityUsd
+    ?? vault?.liquidity?.usd
+    ?? 0,
+  );
+  const totalAssetsUsd = Number(vault?.state?.totalAssetsUsd ?? 0);
+  const shareOfTvl = totalAssetsUsd > 0 ? usd / totalAssetsUsd : 0;
+
+  return { assets, usd, shareOfTvl };
 }
 
 export function getTokenDecimals(vault) {

@@ -1,5 +1,5 @@
 import { formatCompactNumber, formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
-import { getTokenDecimals, getTokenSymbol, getVaultApy } from '../lib/morpho';
+import { getTokenDecimals, getTokenSymbol, getVaultApy, getVaultLiquidity } from '../lib/morpho';
 
 export default function VaultCard({ vault, onClick }) {
   const decimals = getTokenDecimals(vault);
@@ -7,6 +7,10 @@ export default function VaultCard({ vault, onClick }) {
   const totalAssets = formatTokenAmount(vault?.state?.totalAssets, decimals, 2);
   const totalAssetsUsd = formatUsd(Number(vault?.state?.totalAssetsUsd ?? 0));
   const apy = formatPercent(getVaultApy(vault));
+  const { assets: liquidityAssets, usd: liquidityUsd, shareOfTvl } = getVaultLiquidity(vault);
+  const liquidity = formatTokenAmount(liquidityAssets, decimals, 2);
+  const liquidityUsdFormatted = formatUsd(liquidityUsd);
+  const liquidityShare = formatPercent(shareOfTvl);
   const marketCount = vault?.state?.allocation?.filter((row) => Number(row?.supplyAssets ?? 0) > 0).length ?? 0;
   const chainId = vault?.chain?.id;
 
@@ -33,6 +37,11 @@ export default function VaultCard({ vault, onClick }) {
           <div>
             <span>APY</span>
             <strong className="apy-value">{apy}</strong>
+          </div>
+          <div>
+            <span>Liquidity</span>
+            <strong>{liquidityUsdFormatted}</strong>
+            <small>{liquidity} {symbol} · {liquidityShare} of TVL</small>
           </div>
           <div>
             <span>Markets</span>
