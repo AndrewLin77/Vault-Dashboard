@@ -7,11 +7,13 @@ const EXPLORERS = {
   999: 'https://hyperevmscan.io',
 };
 
+/** Return the block explorer URL for a contract/wallet address on the given chain. */
 export function getAddressExplorerUrl(address, chainId = 1) {
   const base = EXPLORERS[Number(chainId)] ?? EXPLORERS[1];
   return `${base}/address/${address}`;
 }
 
+/** Return the display name for a chain's block explorer. */
 export function getExplorerName(chainId = 1) {
   const names = {
     1: 'Etherscan',

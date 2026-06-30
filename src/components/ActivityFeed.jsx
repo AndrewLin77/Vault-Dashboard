@@ -6,6 +6,7 @@ const TYPE_LABELS = {
   Rebalance: 'Rebalance',
 };
 
+/** Chronological list of deposits, withdrawals, and rebalances for a vault. */
 export default function ActivityFeed({ activity, decimals = 18 }) {
   if (!activity.length) {
     return <div className="empty-state">No recent activity returned for this vault.</div>;

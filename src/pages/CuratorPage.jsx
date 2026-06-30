@@ -6,6 +6,7 @@ import { useCuratorVaults } from '../hooks/useCuratorVaults';
 import { calculateAggregateStats } from '../lib/morpho';
 import { decodeCuratorSlug, vaultPath } from '../lib/routes';
 
+/** Curator detail page — overview stats and clickable vault grid. */
 export default function CuratorPage() {
   const { curatorSlug } = useParams();
   const navigate = useNavigate();

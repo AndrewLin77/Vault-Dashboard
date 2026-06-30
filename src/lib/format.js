@@ -1,3 +1,4 @@
+/** Format a number in compact notation (e.g. 1.2M). */
 export function formatCompactNumber(value) {
   if (!Number.isFinite(value)) return '—';
   return new Intl.NumberFormat('en', {
@@ -6,6 +7,7 @@ export function formatCompactNumber(value) {
   }).format(value);
 }
 
+/** Format a USD value; uses compact notation for amounts ≥ $1M. */
 export function formatUsd(value) {
   if (!Number.isFinite(value)) return '—';
   return new Intl.NumberFormat('en', {
@@ -16,11 +18,13 @@ export function formatUsd(value) {
   }).format(value);
 }
 
+/** Format a decimal APY/rate as a percentage string (e.g. 0.0812 → "8.12%"). */
 export function formatPercent(value) {
   if (!Number.isFinite(value)) return '—';
   return `${(value * 100).toFixed(2)}%`;
 }
 
+/** Convert a raw on-chain token amount to a human-readable string. */
 export function formatTokenAmount(rawAmount, decimals = 18, maximumFractionDigits = 2) {
   const amount = Number(rawAmount);
   if (!Number.isFinite(amount)) return '—';
@@ -30,6 +34,7 @@ export function formatTokenAmount(rawAmount, decimals = 18, maximumFractionDigit
   }).format(normalized);
 }
 
+/** Format a Unix timestamp as a localized date and time. */
 export function formatDateTime(timestamp) {
   const value = Number(timestamp);
   if (!Number.isFinite(value)) return '—';
@@ -39,6 +44,7 @@ export function formatDateTime(timestamp) {
   }).format(new Date(value * 1000));
 }
 
+/** Format a Unix timestamp as a relative time (e.g. "2 hours ago"). */
 export function formatRelativeTime(timestamp) {
   const value = Number(timestamp);
   if (!Number.isFinite(value)) return '—';
@@ -64,6 +70,7 @@ export function formatRelativeTime(timestamp) {
   return '—';
 }
 
+/** Clamp a percentage value to the 0–100 range. */
 export function clampPercent(value) {
   if (!Number.isFinite(value)) return 0;
   return Math.min(100, Math.max(0, value));

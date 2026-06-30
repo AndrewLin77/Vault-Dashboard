@@ -1,5 +1,6 @@
 import { formatUsd } from '../lib/format';
 
+/** Show the curator's image or a letter fallback avatar. */
 function CuratorAvatar({ curator }) {
   if (curator.image) {
     return <img className="curator-avatar" src={curator.image} alt="" />;
@@ -9,6 +10,7 @@ function CuratorAvatar({ curator }) {
   return <div className="curator-avatar curator-avatar-fallback">{initial}</div>;
 }
 
+/** Clickable row on the landing page showing curator name, address, and AUM. */
 export default function CuratorCard({ curator, onClick }) {
   return (
     <button className="curator-card" type="button" onClick={onClick}>

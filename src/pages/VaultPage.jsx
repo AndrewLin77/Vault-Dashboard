@@ -6,6 +6,7 @@ import { useVaultActivity } from '../hooks/useVaultActivity';
 import { normalizeVaultActivity } from '../lib/morpho';
 import { curatorPath, decodeCuratorSlug } from '../lib/routes';
 
+/** Vault detail page — resolves vault from URL params and loads its activity feed. */
 export default function VaultPage() {
   const { curatorSlug, chainId, vaultAddress } = useParams();
   const curatorQuery = decodeCuratorSlug(curatorSlug);

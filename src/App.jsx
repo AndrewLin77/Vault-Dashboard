@@ -4,6 +4,7 @@ import CuratorPage from './pages/CuratorPage';
 import HomePage from './pages/HomePage';
 import VaultPage from './pages/VaultPage';
 
+/** Scroll the window to top whenever the route changes. */
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -14,6 +15,7 @@ function ScrollToTop() {
   return null;
 }
 
+/** Root layout with background styling and client-side route definitions. */
 export default function App() {
   return (
     <main className="app-shell">

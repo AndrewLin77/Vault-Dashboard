@@ -1,6 +1,7 @@
 import { formatCompactNumber, formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
 import { getTokenDecimals, getTokenSymbol, getVaultApy, getVaultLiquidity } from '../lib/morpho';
 
+/** Clickable vault summary showing TVL, APY, liquidity, and market count. */
 export default function VaultCard({ vault, onClick }) {
   const decimals = getTokenDecimals(vault);
   const symbol = getTokenSymbol(vault);

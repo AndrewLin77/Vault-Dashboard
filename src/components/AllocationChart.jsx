@@ -3,6 +3,7 @@ import { formatCompactNumber } from '../lib/format';
 
 const COLORS = ['#f97316', '#14b8a6', '#60a5fa', '#e879f9', '#f43f5e', '#84cc16', '#c084fc'];
 
+/** Donut chart and list breakdown of a vault's market allocations. */
 export default function AllocationChart({ allocations }) {
   if (!allocations.length) {
     return <div className="empty-state">No allocation data returned for this vault.</div>;

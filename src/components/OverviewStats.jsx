@@ -1,5 +1,6 @@
 import { formatPercent, formatUsd } from '../lib/format';
 
+/** Single stat tile used in the curator overview row. */
 function StatCard({ label, value, hint }) {
   return (
     <article className="stat-card">
@@ -10,6 +11,7 @@ function StatCard({ label, value, hint }) {
   );
 }
 
+/** Curator-level summary: vault count, total TVL, and TVL-weighted APY. */
 export default function OverviewStats({ stats, vaultCount, loading, compact = false }) {
   const totalAssetsUsd = formatUsd(stats.totalAssetsUsd);
   const weightedApy = formatPercent(stats.weightedApy);

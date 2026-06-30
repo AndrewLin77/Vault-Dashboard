@@ -6,6 +6,7 @@ import { getAllocationRows, getTokenDecimals, getTokenSymbol, getVaultApy, getVa
 import { formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
 import { getExplorerName } from '../lib/explorer';
 
+/** Full vault view with allocations chart, activity feed, and explorer link. */
 export default function VaultDetail({ vault, curatorName, activity, activityLoading, backTo }) {
   if (!vault) {
     return (

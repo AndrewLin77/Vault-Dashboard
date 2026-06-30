@@ -3,6 +3,7 @@ import CuratorCard from './CuratorCard';
 import { useCuratorSearch, usePrimaryCurators } from '../hooks/useCurators';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
+/** Landing page with debounced curator search and primary curator list. */
 export default function CuratorLanding({ onSelectCurator }) {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search);

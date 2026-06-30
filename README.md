@@ -111,38 +111,6 @@ Primary curators are fetched with `verified: true`, sorted by AUM client-side, a
 
 Listed vaults are fetched separately for V1 (`vaults`) and V2 (`vaultV2s`), filtered by `curatorAddress_in` and `listed: true`, then merged. Test/deployer vaults named `(Deployer)` or `zzzz` are excluded.
 
-```graphql
-query CuratorVaults($addresses: [String!]!) {
-  vaults(where: { curatorAddress_in: $addresses, listed: true }, first: 50) {
-    items {
-      address
-      name
-      liquidity { underlying usd }
-      state {
-        totalAssets
-        totalAssetsUsd
-        netApy
-        allocation { supplyAssets supplyAssetsUsd market { marketId } }
-      }
-    }
-  }
-}
-```
-
-```graphql
-query CuratorVaultsV2($addresses: [Address!]!) {
-  vaultV2s(where: { curatorAddress_in: $addresses, listed: true }, first: 50) {
-    items {
-      address
-      totalAssetsUsd
-      netApy
-      liquidity
-      liquidityUsd
-      caps { items { type allocation data { ... on MarketV1CapData { market { marketId } } } } }
-    }
-  }
-}
-```
 
 ### Activity
 
@@ -174,17 +142,6 @@ export const PRIMARY_CURATORS_COUNT = 20;
 ```
 
 No environment variables are required. The Morpho GraphQL API is public.
-
----
-
-## Example Curators
-
-| Curator | Address |
-|---|---|
-| AlphaPing | `0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5` |
-| Gauntlet | `0x4Ef4C1208F7374d0252767E3992546d61dCf9848` |
-| Re7 Labs | `0x86328E3A1A7492E0e0cA1B46021AEE936eCb72C6` |
-| Steakhouse | `0xBEEF69Ac7870777598A04B2bd4771c71212E6aBc` |
 
 ---
 

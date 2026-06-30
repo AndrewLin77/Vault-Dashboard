@@ -1,5 +1,6 @@
 import { getAddressExplorerUrl, getExplorerName } from '../lib/explorer';
 
+/** External link to view a vault address on the chain's block explorer. */
 export default function AddressLink({ address, chainId = 1, className = 'address-link' }) {
   if (!address) return null;
 

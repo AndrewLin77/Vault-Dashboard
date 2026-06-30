@@ -1,5 +1,6 @@
 import { CURATOR_SUGGESTIONS } from '../lib/morpho';
 
+/** Legacy curator search form with suggestion chips (not used in current routing flow). */
 export default function CuratorInput({
   value,
   onChange,

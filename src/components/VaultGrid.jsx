@@ -1,5 +1,6 @@
 import VaultCard from './VaultCard';
 
+/** Renders a grid of vault summary cards for a curator. */
 export default function VaultGrid({ vaults, onVaultSelect }) {
   return (
     <section className="vault-list">

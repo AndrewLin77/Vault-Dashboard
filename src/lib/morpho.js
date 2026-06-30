@@ -1,5 +1,8 @@
 const ENDPOINT = 'https://api.morpho.org/graphql';
 
+/** Morpho GraphQL client — fetches curators, vaults (V1/V2), activity, and derived metrics. */
+
+/** Maps common curator names to known on-chain addresses (fallback when API search misses). */
 export const CURATOR_DIRECTORY = {
   alphaping: '0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5',
   gauntlet: '0x4Ef4C1208F7374d0252767E3992546d61dCf9848',
@@ -26,6 +29,7 @@ const CURATOR_LIST_QUERY = `
   }
 `;
 
+/** Shape a raw Morpho curator API item into the app's curator model. */
 function normalizeCuratorItem(item) {
   return {
     name: item?.name ?? 'Unknown curator',
@@ -37,10 +41,12 @@ function normalizeCuratorItem(item) {
   };
 }
 
+/** Sort curators by AUM descending. */
 function sortCuratorsByAum(curators) {
   return [...curators].sort((left, right) => right.aum - left.aum);
 }
 
+/** Fetch verified curators from Morpho and return the top N by AUM. */
 export async function fetchPrimaryCurators(limit = 20) {
   const data = await fetchGraphQL(CURATOR_LIST_QUERY, {
     first: 100,
@@ -50,6 +56,7 @@ export async function fetchPrimaryCurators(limit = 20) {
   return sortCuratorsByAum(items).slice(0, limit);
 }
 
+/** Search curators by name or address string. */
 export async function searchCurators(search, limit = 20) {
   const trimmed = search.trim();
   if (!trimmed) return [];
@@ -61,10 +68,12 @@ export async function searchCurators(search, limit = 20) {
   return sortCuratorsByAum((data?.curators?.items ?? []).map(normalizeCuratorItem));
 }
 
+/** Return true if the string looks like an Ethereum address. */
 function isAddress(value) {
   return /^0x[a-fA-F0-9]{40}$/.test(value);
 }
 
+/** Resolve a curator name to an address using the local directory, or pass through as-is. */
 export function resolveCuratorInput(input) {
   const trimmed = input.trim();
   if (!trimmed) return '';
@@ -72,6 +81,7 @@ export function resolveCuratorInput(input) {
   return CURATOR_DIRECTORY[trimmed.toLowerCase()] ?? trimmed;
 }
 
+/** POST a GraphQL query to the Morpho API and return the data payload. */
 async function fetchGraphQL(query, variables) {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
@@ -90,6 +100,10 @@ async function fetchGraphQL(query, variables) {
   return payload.data;
 }
 
+/**
+ * Turn a curator name or address into curator metadata and all known addresses.
+ * Searches the API first, then falls back to CURATOR_DIRECTORY.
+ */
 async function resolveCuratorAddresses(input) {
   const normalized = input.trim();
   if (!normalized) return { addresses: [], aum: 0, name: '' };
@@ -278,15 +292,18 @@ const VAULT_V2_ACTIVITY_QUERY = `
   }
 `;
 
+/** Skip internal/test vaults that should not appear in the dashboard. */
 function isExcludedVaultName(name) {
   const trimmed = name?.trim() ?? '';
   return trimmed === '(Deployer)' || /^zzzz$/i.test(trimmed);
 }
 
+/** Unique key for deduplicating V1/V2 vaults on the same chain. */
 function vaultKey(vault) {
   return `${vault.chain?.id ?? 'unknown'}-${vault.address?.toLowerCase()}`;
 }
 
+/** Add vaultVersion and flatten V1 liquidity onto state for consistent access. */
 function normalizeVaultV1Item(item) {
   return {
     ...item,
@@ -299,9 +316,8 @@ function normalizeVaultV1Item(item) {
   };
 }
 
+/** Sum instant and force-deallocatable V2 liquidity to match Morpho's displayed total. */
 function getVaultV2LiquidityTotals(item) {
-  // Morpho V2 UI treats withdrawable liquidity as instant (idle + liquidity adapter)
-  // plus assets reachable via forceDeallocate on liquid adapters.
   const instantAssets = Number(item.liquidity ?? 0);
   const instantUsd = Number(item.liquidityUsd ?? 0);
   const forceAssets = Number(item.forceDeallocatableLiquidity ?? 0);
@@ -313,6 +329,7 @@ function getVaultV2LiquidityTotals(item) {
   };
 }
 
+/** Map V2 caps to allocation rows and normalize liquidity fields onto state. */
 function normalizeVaultV2Item(item) {
   const totalAssets = Number(item.totalAssets ?? 0);
   const totalAssetsUsd = Number(item.totalAssetsUsd ?? 0);
@@ -351,6 +368,7 @@ function normalizeVaultV2Item(item) {
   };
 }
 
+/** Merge listed V1 and V2 vaults, dedupe by chain+address, sort by TVL. */
 function mergeCuratorVaults(v1Items, v2Items) {
   const merged = new Map();
 
@@ -369,6 +387,7 @@ function mergeCuratorVaults(v1Items, v2Items) {
   );
 }
 
+/** Fetch all listed vaults for a curator (V1 + V2) with aggregate metadata. */
 export async function fetchCuratorVaults(curatorInput) {
   const curator = await resolveCuratorAddresses(curatorInput);
   if (!curator.addresses.length) {
@@ -395,6 +414,10 @@ export async function fetchCuratorVaults(curatorInput) {
   };
 }
 
+/**
+ * Fetch recent transactions for a vault.
+ * V1 includes deposits/withdrawals plus V2-style rebalance events.
+ */
 export async function fetchVaultActivity(vaultAddress, chainId, vaultVersion = 'v1') {
   if (vaultVersion === 'v2') {
     const data = await fetchGraphQL(VAULT_V2_ACTIVITY_QUERY, {
@@ -438,8 +461,8 @@ export async function fetchVaultActivity(vaultAddress, chainId, vaultVersion = '
   );
 }
 
+/** Return the vault's current net APY (matches Morpho's live rate display). */
 export function getVaultApy(vault) {
-  // Morpho vault pages show current netApy, not the historical avgNetApy average.
   const netApy = vault?.state?.netApy ?? vault?.netApy;
   if (netApy != null && Number.isFinite(Number(netApy))) {
     return Number(netApy);
@@ -447,6 +470,7 @@ export function getVaultApy(vault) {
   return Number(vault?.state?.avgNetApy ?? vault?.avgNetApy ?? 0);
 }
 
+/** Return withdrawable liquidity (token amount, USD, and share of TVL). */
 export function getVaultLiquidity(vault) {
   const assets = Number(
     vault?.state?.liquidityAssets
@@ -464,14 +488,17 @@ export function getVaultLiquidity(vault) {
   return { assets, usd, shareOfTvl };
 }
 
+/** Return the vault underlying asset decimals (defaults to 18). */
 export function getTokenDecimals(vault) {
   return Number(vault?.asset?.decimals ?? 18);
 }
 
+/** Return the display symbol for a vault's underlying asset. */
 export function getTokenSymbol(vault) {
   return vault?.asset?.symbol ?? vault?.symbol ?? 'Token';
 }
 
+/** Build a human-readable market label from loan/collateral symbols. */
 function formatMarketLabel(market) {
   const loan = market?.loanAsset?.symbol;
   const collateral = market?.collateralAsset?.symbol;
@@ -479,6 +506,7 @@ function formatMarketLabel(market) {
   return market?.marketId ?? 'Unknown market';
 }
 
+/** Build sorted allocation rows with percentages for charts and tables. */
 export function getAllocationRows(vault) {
   const totalAssets = Number(vault?.state?.totalAssets ?? 0);
   return (vault?.state?.allocation ?? [])
@@ -501,6 +529,7 @@ export function getAllocationRows(vault) {
     .sort((left, right) => right.percentage - left.percentage);
 }
 
+/** Compute curator-level TVL, weighted APY, and optional 24h deposit/withdrawal totals. */
 export function calculateAggregateStats(vaults, activitiesByVault, curatorAum = 0) {
   const vaultSummaries = vaults.map((vault) => {
     const decimals = Number(vault?.asset?.decimals ?? 18);
@@ -541,6 +570,7 @@ export function calculateAggregateStats(vaults, activitiesByVault, curatorAum = 
   };
 }
 
+/** Sort activity items newest-first. */
 export function normalizeVaultActivity(activities) {
   return [...activities].sort((left, right) => Number(right.timestamp) - Number(left.timestamp));
 }
