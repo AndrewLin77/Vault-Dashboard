@@ -2,11 +2,11 @@ export default function DashboardHeader({ curatorLabel, resolvedAddress, vaultCo
   return (
     <section className="panel hero-panel hero-panel-single">
       <div className="hero-copy">
-        <p className="eyebrow">Morpho curator vault dashboard</p>
+        <p className="eyebrow">Curator vault dashboard</p>
         <h1>{curatorLabel} vaults</h1>
         <p className="hero-text">
           Track TVL, APY, market allocations, and recent deposits, withdrawals, and rebalancing
-          across all {curatorLabel} vaults on Morpho.
+          across all {curatorLabel} vaults.
         </p>
         <div className="hero-meta">
           {resolvedAddress ? (

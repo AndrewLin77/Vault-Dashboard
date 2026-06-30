@@ -23,7 +23,7 @@ export default function CuratorLanding({ onSelectCurator }) {
   return (
     <div className="curator-landing">
       <header className="landing-header">
-        <p className="eyebrow">Morpho curator vault dashboard</p>
+        <p className="eyebrow">Curator vault dashboard</p>
         <h1>Curators</h1>
         <p className="landing-subtitle">
           Browse vault curators on Morpho. Select a curator to explore their vaults, TVL, and activity.
