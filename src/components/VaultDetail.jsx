@@ -19,8 +19,6 @@ export default function VaultDetail({
   curatorName,
   activity,
   activityLoading,
-  history,
-  historyLoading,
   backTo,
 }) {
   if (!vault) {
@@ -105,7 +103,7 @@ export default function VaultDetail({
         </div>
       </div>
 
-      <HistoryCharts history={history} loading={historyLoading} />
+      <HistoryCharts vault={vault} />
     </section>
   );
 }

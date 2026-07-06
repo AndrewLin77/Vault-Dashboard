@@ -275,14 +275,14 @@ const VAULT_ACTIVITY_QUERY = `
 `;
 
 const VAULT_HISTORY_V1_QUERY = `
-  query VaultHistoryV1($address: String!, $chainId: Int!) {
+  query VaultHistoryV1($address: String!, $chainId: Int!, $options: TimeseriesOptions) {
     vaultByAddress(address: $address, chainId: $chainId) {
       historicalState {
-        totalAssetsUsd(options: { interval: DAY }) {
+        totalAssetsUsd(options: $options) {
           x
           y
         }
-        dailyNetApy(options: { interval: DAY }) {
+        dailyNetApy(options: $options) {
           x
           y
         }
@@ -292,14 +292,14 @@ const VAULT_HISTORY_V1_QUERY = `
 `;
 
 const VAULT_HISTORY_V2_QUERY = `
-  query VaultHistoryV2($address: String!, $chainId: Int!) {
+  query VaultHistoryV2($address: String!, $chainId: Int!, $options: TimeseriesOptions) {
     vaultV2ByAddress(address: $address, chainId: $chainId) {
       historicalState {
-        totalAssetsUsd(options: { interval: DAY }) {
+        totalAssetsUsd(options: $options) {
           x
           y
         }
-        avgNetApy(options: { interval: DAY }) {
+        avgNetApy(options: $options) {
           x
           y
         }
@@ -432,19 +432,24 @@ export function calculateSeriesAverage(points) {
   return sum / points.length;
 }
 
-const APY_RANGE_MS = {
-  weekly: 7 * 86_400_000,
-  monthly: 30 * 86_400_000,
-  yearly: 365 * 86_400_000,
+/**
+ * Trailing window (seconds) requested per range. We pass only start/end and let
+ * the API auto-pick the interval — matching Morpho's own chart, which yields
+ * hourly points for a week, daily for a month, and weekly for a year / all time.
+ */
+const HISTORY_RANGE_SPAN_S = {
+  weekly: 7 * 86_400,
+  monthly: 30 * 86_400,
+  yearly: 365 * 86_400,
+  allTime: 5 * 365 * 86_400,
 };
 
-/** Trim an APY series to the selected trailing window; 'allTime' keeps the full series. */
-export function filterSeriesByApyRange(points, rangeId) {
-  const windowMs = APY_RANGE_MS[rangeId];
-  if (!points?.length || !windowMs) return points ?? [];
-  const startMs = points[points.length - 1].timestampMs - windowMs;
-  return points.filter((point) => point.timestampMs >= startMs);
-}
+export const HISTORY_RANGES = [
+  { id: 'weekly', label: 'Weekly' },
+  { id: 'monthly', label: 'Monthly' },
+  { id: 'yearly', label: 'Yearly' },
+  { id: 'allTime', label: 'All time' },
+];
 
 /** Drop the leading warmup period where a vault is live but net APY is still 0. */
 function dropLeadingZeros(points) {
@@ -485,12 +490,20 @@ function mergeCuratorVaults(v1Items, v2Items) {
   );
 }
 
-/** Fetch historical APY/TVL for a single vault (too heavy for curator list queries). */
-export async function fetchVaultHistory(vaultAddress, chainId, vaultVersion = 'v1') {
+/**
+ * Fetch TVL + net APY history for a single vault over the selected range.
+ * Only start/end are sent so the API auto-selects granularity (like Morpho's chart).
+ */
+export async function fetchVaultHistory(vaultAddress, chainId, vaultVersion = 'v1', range = 'weekly') {
+  const now = Math.floor(Date.now() / 1000);
+  const span = HISTORY_RANGE_SPAN_S[range] ?? HISTORY_RANGE_SPAN_S.weekly;
+  const options = { startTimestamp: now - span, endTimestamp: now };
+
   if (vaultVersion === 'v2') {
     const data = await fetchGraphQL(VAULT_HISTORY_V2_QUERY, {
       address: vaultAddress,
       chainId: Number(chainId),
+      options,
     });
     return normalizeVaultHistory(data?.vaultV2ByAddress, 'v2');
   }
@@ -498,6 +511,7 @@ export async function fetchVaultHistory(vaultAddress, chainId, vaultVersion = 'v
   const data = await fetchGraphQL(VAULT_HISTORY_V1_QUERY, {
     address: vaultAddress,
     chainId: Number(chainId),
+    options,
   });
   return normalizeVaultHistory(data?.vaultByAddress, 'v1');
 }

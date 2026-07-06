@@ -555,6 +555,19 @@ a {
   border-radius: 22px;
 }
 
+.history-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.history-panel-head h3 {
+  margin: 0;
+}
+
 .history-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -584,7 +597,6 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin: 0.35rem 0 0.55rem;
 }
 
 .history-range-button {

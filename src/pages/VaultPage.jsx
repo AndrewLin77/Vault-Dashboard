@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import VaultDetail from '../components/VaultDetail';
 import { useCuratorVaults } from '../hooks/useCuratorVaults';
 import { useVaultActivity } from '../hooks/useVaultActivity';
-import { useVaultHistory } from '../hooks/useVaultHistory';
 import { normalizeVaultActivity } from '../lib/morpho';
 import { curatorPath, decodeCuratorSlug } from '../lib/routes';
 
@@ -23,7 +22,6 @@ export default function VaultPage() {
   ) ?? null;
 
   const activityQuery = useVaultActivity(vault);
-  const historyQuery = useVaultHistory(vault);
   const activity = useMemo(
     () => normalizeVaultActivity(activityQuery.data ?? []),
     [activityQuery.data],
@@ -41,8 +39,6 @@ export default function VaultPage() {
       curatorName={curatorName}
       activity={activity}
       activityLoading={activityQuery.isLoading}
-      history={historyQuery.data}
-      historyLoading={historyQuery.isLoading}
       backTo={backTo}
     />
   );
