@@ -13,6 +13,12 @@ export function getAddressExplorerUrl(address, chainId = 1) {
   return `${base}/address/${address}`;
 }
 
+/** Return the block explorer URL for a transaction hash on the given chain. */
+export function getTxExplorerUrl(txHash, chainId = 1) {
+  const base = EXPLORERS[Number(chainId)] ?? EXPLORERS[1];
+  return `${base}/tx/${txHash}`;
+}
+
 /** Return the display name for a chain's block explorer. */
 export function getExplorerName(chainId = 1) {
   const names = {

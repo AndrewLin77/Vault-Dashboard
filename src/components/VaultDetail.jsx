@@ -84,7 +84,7 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
             <div className="loading-block">Loading transactions…</div>
           ) : (
             <div className="activity-scroll">
-              <ActivityFeed activity={activity} decimals={decimals} />
+              <ActivityFeed activity={activity} decimals={decimals} chainId={vault.chain?.id} />
             </div>
           )}
         </div>

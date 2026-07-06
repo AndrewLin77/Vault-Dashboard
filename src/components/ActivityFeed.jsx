@@ -1,4 +1,5 @@
 import { formatCompactNumber, formatDateTime, formatRelativeTime } from '../lib/format';
+import TxLink from './TxLink';
 
 const TYPE_LABELS = {
   Deposit: 'Deposit',
@@ -6,8 +7,13 @@ const TYPE_LABELS = {
   Rebalance: 'Rebalance',
 };
 
+function truncateTxHash(txHash) {
+  if (!txHash || txHash.length < 14) return txHash ?? '—';
+  return `${txHash.slice(0, 10)}…`;
+}
+
 /** Chronological list of deposits, withdrawals, and rebalances for a vault. */
-export default function ActivityFeed({ activity, decimals = 18 }) {
+export default function ActivityFeed({ activity, decimals = 18, chainId = 1 }) {
   if (!activity.length) {
     return <div className="empty-state">No recent activity returned for this vault.</div>;
   }
@@ -24,7 +30,13 @@ export default function ActivityFeed({ activity, decimals = 18 }) {
             <span>{formatDateTime(item.timestamp)}</span>
             <small>{formatRelativeTime(item.timestamp)}</small>
           </div>
-          <code className="activity-hash">{item.txHash.slice(0, 10)}…</code>
+          {item.txHash ? (
+            <TxLink txHash={item.txHash} chainId={chainId} className="activity-hash tx-link">
+              {truncateTxHash(item.txHash)}
+            </TxLink>
+          ) : (
+            <span className="activity-hash">—</span>
+          )}
         </article>
       ))}
     </div>
