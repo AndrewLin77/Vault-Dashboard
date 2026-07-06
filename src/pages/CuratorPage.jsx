@@ -48,7 +48,7 @@ export default function CuratorPage() {
         </section>
       ) : null}
 
-      {!vaultsQuery.isLoading && vaults.length === 0 ? (
+      {!vaultsQuery.isLoading && !vaultsQuery.isError && vaults.length === 0 ? (
         <section className="panel empty-state">
           No listed vaults were found for this curator.
         </section>

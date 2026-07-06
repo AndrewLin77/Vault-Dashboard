@@ -8,10 +8,9 @@ export default function VaultCard({ vault, onClick }) {
   const totalAssets = formatTokenAmount(vault?.state?.totalAssets, decimals, 2);
   const totalAssetsUsd = formatUsd(Number(vault?.state?.totalAssetsUsd ?? 0));
   const apy = formatPercent(getVaultApy(vault));
-  const { assets: liquidityAssets, usd: liquidityUsd, shareOfTvl } = getVaultLiquidity(vault);
+  const { assets: liquidityAssets, usd: liquidityUsd } = getVaultLiquidity(vault);
   const liquidity = formatTokenAmount(liquidityAssets, decimals, 2);
   const liquidityUsdFormatted = formatUsd(liquidityUsd);
-  const liquidityShare = formatPercent(shareOfTvl);
   const hasNoLiquidity = liquidityUsd <= 0;
   const marketCount = vault?.state?.allocation?.filter((row) => Number(row?.supplyAssets ?? 0) > 0).length ?? 0;
   const chainId = vault?.chain?.id;
@@ -44,7 +43,7 @@ export default function VaultCard({ vault, onClick }) {
             <span>Liquidity</span>
             <strong className={hasNoLiquidity ? 'liquidity-zero' : undefined}>{liquidityUsdFormatted}</strong>
             <small className={hasNoLiquidity ? 'liquidity-zero' : undefined}>
-              {liquidity} {symbol} · {liquidityShare} of TVL
+              {liquidity} {symbol}
             </small>
           </div>
           <div>

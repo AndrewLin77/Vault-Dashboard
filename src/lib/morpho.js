@@ -274,6 +274,40 @@ const VAULT_ACTIVITY_QUERY = `
   }
 `;
 
+const VAULT_HISTORY_V1_QUERY = `
+  query VaultHistoryV1($address: String!, $chainId: Int!) {
+    vaultByAddress(address: $address, chainId: $chainId) {
+      historicalState {
+        totalAssetsUsd(options: { interval: DAY }) {
+          x
+          y
+        }
+        dailyNetApy(options: { interval: DAY }) {
+          x
+          y
+        }
+      }
+    }
+  }
+`;
+
+const VAULT_HISTORY_V2_QUERY = `
+  query VaultHistoryV2($address: String!, $chainId: Int!) {
+    vaultV2ByAddress(address: $address, chainId: $chainId) {
+      historicalState {
+        totalAssetsUsd(options: { interval: DAY }) {
+          x
+          y
+        }
+        avgNetApy(options: { interval: DAY }) {
+          x
+          y
+        }
+      }
+    }
+  }
+`;
+
 const VAULT_V2_ACTIVITY_QUERY = `
   query VaultV2Activity($vault: String!, $chainId: Int!) {
     vaultV2transactions(
@@ -368,6 +402,70 @@ function normalizeVaultV2Item(item) {
   };
 }
 
+function normalizeTimestampMs(x) {
+  const value = Number(x);
+  if (!Number.isFinite(value)) return null;
+  // Morpho historical points use unix seconds.
+  return value < 1e12 ? value * 1000 : value;
+}
+
+function normalizeDataPoint(point) {
+  const timestampMs = normalizeTimestampMs(point?.x);
+  // Morpho pads early/missing periods with null y — drop them so they don't render as 0%.
+  if (point?.y == null) return null;
+  const y = Number(point.y);
+  if (timestampMs == null || !Number.isFinite(y)) return null;
+  return { timestampMs, value: y };
+}
+
+function normalizeSeries(points) {
+  return (points ?? [])
+    .map(normalizeDataPoint)
+    .filter(Boolean)
+    .sort((a, b) => a.timestampMs - b.timestampMs);
+}
+
+/** Mean of a normalized series' values (null when empty). */
+export function calculateSeriesAverage(points) {
+  if (!points?.length) return null;
+  const sum = points.reduce((acc, point) => acc + Number(point.value ?? 0), 0);
+  return sum / points.length;
+}
+
+const APY_RANGE_MS = {
+  weekly: 7 * 86_400_000,
+  monthly: 30 * 86_400_000,
+  yearly: 365 * 86_400_000,
+};
+
+/** Trim an APY series to the selected trailing window; 'allTime' keeps the full series. */
+export function filterSeriesByApyRange(points, rangeId) {
+  const windowMs = APY_RANGE_MS[rangeId];
+  if (!points?.length || !windowMs) return points ?? [];
+  const startMs = points[points.length - 1].timestampMs - windowMs;
+  return points.filter((point) => point.timestampMs >= startMs);
+}
+
+/** Drop the leading warmup period where a vault is live but net APY is still 0. */
+function dropLeadingZeros(points) {
+  const firstEarning = points.findIndex((point) => point.value !== 0);
+  return firstEarning > 0 ? points.slice(firstEarning) : points;
+}
+
+/**
+ * Normalize a vault's history for the detail view: a daily net APY line and a
+ * daily TVL line. V1 uses granular dailyNetApy; V2 only exposes avgNetApy.
+ */
+function normalizeVaultHistory(node, vaultVersion) {
+  const hs = node?.historicalState ?? {};
+  const apySource = vaultVersion === 'v2' ? hs.avgNetApy : hs.dailyNetApy;
+
+  return {
+    tvlUsd: normalizeSeries(hs.totalAssetsUsd),
+    apy: dropLeadingZeros(normalizeSeries(apySource)),
+  };
+}
+
 /** Merge listed V1 and V2 vaults, dedupe by chain+address, sort by TVL. */
 function mergeCuratorVaults(v1Items, v2Items) {
   const merged = new Map();
@@ -385,6 +483,23 @@ function mergeCuratorVaults(v1Items, v2Items) {
   return [...merged.values()].sort(
     (left, right) => Number(right.state?.totalAssetsUsd ?? 0) - Number(left.state?.totalAssetsUsd ?? 0),
   );
+}
+
+/** Fetch historical APY/TVL for a single vault (too heavy for curator list queries). */
+export async function fetchVaultHistory(vaultAddress, chainId, vaultVersion = 'v1') {
+  if (vaultVersion === 'v2') {
+    const data = await fetchGraphQL(VAULT_HISTORY_V2_QUERY, {
+      address: vaultAddress,
+      chainId: Number(chainId),
+    });
+    return normalizeVaultHistory(data?.vaultV2ByAddress, 'v2');
+  }
+
+  const data = await fetchGraphQL(VAULT_HISTORY_V1_QUERY, {
+    address: vaultAddress,
+    chainId: Number(chainId),
+  });
+  return normalizeVaultHistory(data?.vaultByAddress, 'v1');
 }
 
 /** Fetch all listed vaults for a curator (V1 + V2) with aggregate metadata. */

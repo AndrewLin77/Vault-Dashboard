@@ -331,12 +331,28 @@ a {
   color: inherit;
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.vault-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(130deg, rgba(96, 165, 250, 0.08), transparent 40%, rgba(52, 211, 153, 0.06));
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
 }
 
 .vault-card:hover {
   transform: translateX(4px);
   border-color: rgba(251, 191, 36, 0.45);
   background: rgba(12, 19, 35, 0.92);
+}
+
+.vault-card:hover::before {
+  opacity: 1;
 }
 
 .vault-card-main {
@@ -398,6 +414,20 @@ a {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 0.85rem;
+}
+
+.vault-history-inline {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.vault-history-inline span {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  background: rgba(148, 163, 184, 0.12);
 }
 
 .vault-metrics strong {
@@ -519,6 +549,72 @@ a {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 1rem;
+}
+
+.history-panel {
+  border-radius: 22px;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.history-card {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.history-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.history-card-head strong {
+  font-size: 0.9rem;
+}
+
+.history-range-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0.55rem;
+}
+
+.history-range-button {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  background: rgba(148, 163, 184, 0.08);
+  color: #94a3b8;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.history-range-button:hover {
+  border-color: rgba(52, 211, 153, 0.45);
+  color: #d1fae5;
+}
+
+.history-range-button.active {
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(52, 211, 153, 0.14);
+  color: #6ee7b7;
+}
+
+.history-mini-chart {
+  width: 100%;
+}
+
+.history-empty {
+  padding: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .detail-block {
@@ -843,6 +939,10 @@ a {
 
   .detail-summary {
     width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .history-grid {
     grid-template-columns: 1fr;
   }
 }

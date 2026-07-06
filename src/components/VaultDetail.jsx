@@ -2,12 +2,27 @@ import { Link } from 'react-router-dom';
 import AllocationChart from './AllocationChart';
 import ActivityFeed from './ActivityFeed';
 import AddressLink from './AddressLink';
-import { getAllocationRows, getTokenDecimals, getTokenSymbol, getVaultApy, getVaultLiquidity } from '../lib/morpho';
+import HistoryCharts from './HistoryCharts';
+import {
+  getAllocationRows,
+  getTokenDecimals,
+  getTokenSymbol,
+  getVaultApy,
+  getVaultLiquidity,
+} from '../lib/morpho';
 import { formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
 import { getExplorerName } from '../lib/explorer';
 
 /** Full vault view with allocations chart, activity feed, and explorer link. */
-export default function VaultDetail({ vault, curatorName, activity, activityLoading, backTo }) {
+export default function VaultDetail({
+  vault,
+  curatorName,
+  activity,
+  activityLoading,
+  history,
+  historyLoading,
+  backTo,
+}) {
   if (!vault) {
     return (
       <section className="panel detail-panel empty-state">
@@ -19,7 +34,7 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
   const decimals = getTokenDecimals(vault);
   const symbol = getTokenSymbol(vault);
   const allocations = getAllocationRows(vault);
-  const { assets: liquidityAssets, usd: liquidityUsd, shareOfTvl } = getVaultLiquidity(vault);
+  const { assets: liquidityAssets, usd: liquidityUsd } = getVaultLiquidity(vault);
   const hasNoLiquidity = liquidityUsd <= 0;
 
   return (
@@ -63,7 +78,7 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
             <span>Liquidity</span>
             <strong className={hasNoLiquidity ? 'liquidity-zero' : undefined}>{formatUsd(liquidityUsd)}</strong>
             <small className={hasNoLiquidity ? 'liquidity-zero' : undefined}>
-              {formatTokenAmount(liquidityAssets, decimals)} {symbol} · {formatPercent(shareOfTvl)} of TVL
+              {formatTokenAmount(liquidityAssets, decimals)} {symbol}
             </small>
           </div>
           <div>
@@ -89,6 +104,8 @@ export default function VaultDetail({ vault, curatorName, activity, activityLoad
           )}
         </div>
       </div>
+
+      <HistoryCharts history={history} loading={historyLoading} />
     </section>
   );
 }
