@@ -15,7 +15,6 @@ export default function CuratorPage() {
   const vaultsQuery = useCuratorVaults(curatorQuery);
   const vaults = vaultsQuery.data?.vaults ?? [];
   const curatorName = vaultsQuery.data?.curatorName || curatorQuery;
-  const resolvedAddress = vaultsQuery.data?.curatorAddresses?.[0] ?? '';
 
   const stats = useMemo(
     () => calculateAggregateStats(vaults, {}, vaultsQuery.data?.curatorAum ?? 0),
@@ -34,7 +33,6 @@ export default function CuratorPage() {
         <div>
           <p className="eyebrow">Curator</p>
           <h2>{curatorName}</h2>
-          {resolvedAddress ? <p className="section-subtitle">{resolvedAddress}</p> : null}
         </div>
       </section>
 

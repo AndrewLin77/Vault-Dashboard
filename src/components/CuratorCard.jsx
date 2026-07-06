@@ -10,7 +10,7 @@ function CuratorAvatar({ curator }) {
   return <div className="curator-avatar curator-avatar-fallback">{initial}</div>;
 }
 
-/** Clickable row on the landing page showing curator name, address, and AUM. */
+/** Clickable row on the landing page showing curator name and AUM. */
 export default function CuratorCard({ curator, onClick }) {
   return (
     <button className="curator-card" type="button" onClick={onClick}>
@@ -21,11 +21,6 @@ export default function CuratorCard({ curator, onClick }) {
           <h3>{curator.name}</h3>
           {curator.verified ? <span className="curator-verified">Verified</span> : null}
         </div>
-        <p className="curator-card-meta">
-          {curator.primaryAddress
-            ? `${curator.primaryAddress.slice(0, 6)}…${curator.primaryAddress.slice(-4)}`
-            : '—'}
-        </p>
       </div>
 
       <div className="curator-card-stats">

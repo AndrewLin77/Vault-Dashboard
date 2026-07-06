@@ -2,14 +2,6 @@ const ENDPOINT = 'https://api.morpho.org/graphql';
 
 /** Morpho GraphQL client — fetches curators, vaults (V1/V2), activity, and derived metrics. */
 
-/** Maps common curator names to known on-chain addresses (fallback when API search misses). */
-export const CURATOR_DIRECTORY = {
-  alphaping: '0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5',
-  gauntlet: '0x4Ef4C1208F7374d0252767E3992546d61dCf9848',
-  're7 labs': '0x86328E3A1A7492E0e0cA1B46021AEE936eCb72C6',
-  steakhouse: '0xBEEF69Ac7870777598A04B2bd4771c71212E6aBc',
-};
-
 const CURATOR_LIST_QUERY = `
   query CuratorList($first: Int!, $where: CuratorFilters) {
     curators(first: $first, where: $where) {
@@ -37,7 +29,6 @@ function normalizeCuratorItem(item) {
     verified: Boolean(item?.verified),
     aum: Number(item?.state?.aum ?? 0),
     addresses: item?.addresses ?? [],
-    primaryAddress: item?.addresses?.[0]?.address ?? '',
   };
 }
 
@@ -56,7 +47,7 @@ export async function fetchPrimaryCurators(limit = 20) {
   return sortCuratorsByAum(items).slice(0, limit);
 }
 
-/** Search curators by name or address string. */
+/** Search curators by name. */
 export async function searchCurators(search, limit = 20) {
   const trimmed = search.trim();
   if (!trimmed) return [];
@@ -66,19 +57,6 @@ export async function searchCurators(search, limit = 20) {
     where: { search: trimmed },
   });
   return sortCuratorsByAum((data?.curators?.items ?? []).map(normalizeCuratorItem));
-}
-
-/** Return true if the string looks like an Ethereum address. */
-function isAddress(value) {
-  return /^0x[a-fA-F0-9]{40}$/.test(value);
-}
-
-/** Resolve a curator name to an address using the local directory, or pass through as-is. */
-export function resolveCuratorInput(input) {
-  const trimmed = input.trim();
-  if (!trimmed) return '';
-  if (isAddress(trimmed)) return trimmed;
-  return CURATOR_DIRECTORY[trimmed.toLowerCase()] ?? trimmed;
 }
 
 /** POST a GraphQL query to the Morpho API and return the data payload. */
@@ -101,15 +79,12 @@ async function fetchGraphQL(query, variables) {
 }
 
 /**
- * Turn a curator name or address into curator metadata and all known addresses.
- * Searches the API first, then falls back to CURATOR_DIRECTORY.
+ * Resolve a curator name to metadata and on-chain addresses used for vault queries.
+ * Addresses are internal only — not shown in the UI.
  */
-async function resolveCuratorAddresses(input) {
-  const normalized = input.trim();
+async function resolveCuratorAddresses(name) {
+  const normalized = name.trim();
   if (!normalized) return { addresses: [], aum: 0, name: '' };
-  if (isAddress(normalized)) {
-    return { addresses: [normalized], aum: 0, name: normalized };
-  }
 
   const CURATORS_QUERY = `
     query Curators($search: String!) {
@@ -144,10 +119,7 @@ async function resolveCuratorAddresses(input) {
     };
   }
 
-  const fallbackAddress = CURATOR_DIRECTORY[normalized.toLowerCase()];
-  return fallbackAddress
-    ? { addresses: [fallbackAddress], aum: 0, name: normalized }
-    : { addresses: [], aum: 0, name: normalized };
+  return { addresses: [], aum: 0, name: normalized };
 }
 
 const CURATOR_VAULTS_QUERY = `
@@ -520,7 +492,7 @@ export async function fetchVaultHistory(vaultAddress, chainId, vaultVersion = 'v
 export async function fetchCuratorVaults(curatorInput) {
   const curator = await resolveCuratorAddresses(curatorInput);
   if (!curator.addresses.length) {
-    return { vaults: [], curatorAddresses: [], curatorAum: 0, curatorName: curator.name };
+    return { vaults: [], curatorAum: 0, curatorName: curator.name };
   }
 
   const [v1Data, v2Data] = await Promise.all([
@@ -537,7 +509,6 @@ export async function fetchCuratorVaults(curatorInput) {
 
   return {
     vaults,
-    curatorAddresses: curator.addresses,
     curatorAum: curator.aum || vaultTvl,
     curatorName: curator.name,
   };
