@@ -1,9 +1,24 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { formatTokenAmount, formatUsd } from '../lib/format';
+
 const COLORS = ['#f97316', '#14b8a6', '#60a5fa', '#e879f9', '#f43f5e', '#84cc16', '#c084fc'];
 
+function AllocationTooltip({ active, payload, decimals, symbol }) {
+  if (!active || !payload?.length) return null;
+
+  const allocation = payload[0].payload;
+  return (
+    <div className="allocation-tooltip">
+      <strong>{allocation.market}</strong>
+      <span>{allocation.percentage.toFixed(2)}%</span>
+      <span>{formatUsd(allocation.supplyAssetsUsd)}</span>
+      <span>{formatTokenAmount(allocation.supplyAssets, decimals)} {symbol}</span>
+    </div>
+  );
+}
+
 /** Donut chart and list breakdown of a vault's market allocations. */
-export default function AllocationChart({ allocations }) {
-  if (!allocations.length) {
+export default function AllocationChart({ allocations, decimals = 18, symbol = 'Token' }) {  if (!allocations.length) {
     return <div className="empty-state">No allocation data returned for this vault.</div>;
   }
 
@@ -17,7 +32,7 @@ export default function AllocationChart({ allocations }) {
                 <Cell key={entry.key} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
+            <Tooltip content={<AllocationTooltip decimals={decimals} symbol={symbol} />} />
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -29,7 +44,13 @@ export default function AllocationChart({ allocations }) {
             <div className="allocation-copy">
               <strong>{allocation.market}</strong>
             </div>
-            <strong>{allocation.percentage.toFixed(2)}%</strong>
+            <div className="allocation-values">
+              <strong>{allocation.percentage.toFixed(2)}%</strong>
+              <span>{formatUsd(allocation.supplyAssetsUsd)}</span>
+              <small>
+                {formatTokenAmount(allocation.supplyAssets, decimals)} {symbol}
+              </small>
+            </div>
           </div>
         ))}
       </div>

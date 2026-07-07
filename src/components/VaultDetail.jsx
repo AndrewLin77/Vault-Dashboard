@@ -80,7 +80,7 @@ export default function VaultDetail({
       <div className="detail-columns">
         <div className="panel detail-block">
           <h3>Allocation breakdown</h3>
-          <AllocationChart allocations={allocations} />
+          <AllocationChart allocations={allocations} decimals={decimals} symbol={symbol} />
         </div>
         <div className="panel detail-block detail-block-activity">
           <h3>Recent activity</h3>
