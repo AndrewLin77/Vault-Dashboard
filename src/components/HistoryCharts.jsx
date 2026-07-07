@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { HISTORY_RANGES, calculateSeriesAverage } from '../lib/morpho';
 import { useVaultHistory } from '../hooks/useVaultHistory';
+import { HistoryChartsSkeleton } from './Skeleton';
 import { formatPercent, formatUsd } from '../lib/format';
 
 function formatChartDate(timestampMs) {
@@ -60,7 +61,7 @@ function HistoryMiniChart({ points, color, valueFormatter, chartKey, average }) 
               strokeDasharray="4 4"
               ifOverflow="extendDomain"
               label={{
-                value: `avg ${valueFormatter(average)}`,
+                value: `Avg: ${valueFormatter(average)}`,
                 position: 'insideTopRight',
                 fill: '#94a3b8',
                 fontSize: 10,
@@ -120,7 +121,7 @@ export default function HistoryCharts({ vault }) {
       </div>
 
       {isLoading ? (
-        <div className="loading-block">Loading history…</div>
+        <HistoryChartsSkeleton />
       ) : (
         <div className="history-grid">
           <div className="history-card">

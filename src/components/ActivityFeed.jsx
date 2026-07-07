@@ -1,4 +1,4 @@
-import { formatCompactNumber, formatDateTime, formatRelativeTime } from '../lib/format';
+import { formatDateTime, formatRelativeTime, formatTokenAmount } from '../lib/format';
 import TxLink from './TxLink';
 
 const TYPE_LABELS = {
@@ -13,7 +13,7 @@ function truncateTxHash(txHash) {
 }
 
 /** Chronological list of deposits, withdrawals, and rebalances for a vault. */
-export default function ActivityFeed({ activity, decimals = 18, chainId = 1 }) {
+export default function ActivityFeed({ activity, decimals = 18, symbol = 'assets', chainId = 1 }) {
   if (!activity.length) {
     return <div className="empty-state">No recent activity returned for this vault.</div>;
   }
@@ -26,7 +26,9 @@ export default function ActivityFeed({ activity, decimals = 18, chainId = 1 }) {
             {TYPE_LABELS[item.type] ?? item.type ?? 'Event'}
           </div>
           <div className="activity-copy">
-            <strong>{formatCompactNumber(Number(item.assets ?? 0) / 10 ** decimals)} assets</strong>
+            <strong>
+              {formatTokenAmount(item.assets, decimals)} {symbol}
+            </strong>
             <span>{formatDateTime(item.timestamp)}</span>
             <small>{formatRelativeTime(item.timestamp)}</small>
           </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import VaultDetail from '../components/VaultDetail';
+import { VaultDetailSkeleton } from '../components/Skeleton';
 import { usePageTitle } from '../context/PageTitleContext';
 import { useCuratorVaults } from '../hooks/useCuratorVaults';
 import { useVaultActivity } from '../hooks/useVaultActivity';
@@ -37,7 +38,7 @@ export default function VaultPage() {
   const backTo = curatorPath(curatorName);
 
   if (vaultsQuery.isLoading) {
-    return <div className="loading-block">Loading vault…</div>;
+    return <VaultDetailSkeleton />;
   }
 
   return (

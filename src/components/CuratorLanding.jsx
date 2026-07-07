@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import CuratorCard from './CuratorCard';
+import { CuratorListSkeleton } from './Skeleton';
 import { useCuratorSearch, usePrimaryCurators } from '../hooks/useCurators';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
@@ -50,9 +51,7 @@ export default function CuratorLanding({ onSelectCurator }) {
         ) : null}
       </div>
 
-      {loading ? (
-        <div className="loading-block">Loading curators…</div>
-      ) : null}
+      {loading ? <CuratorListSkeleton count={6} /> : null}
 
       {error ? (
         <section className="panel empty-state">Could not load curators. Please try again.</section>

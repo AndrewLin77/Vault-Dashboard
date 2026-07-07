@@ -91,6 +91,8 @@ async function resolveCuratorAddresses(name) {
       curators(where: { search: $search }, first: 10) {
         items {
           name
+          image
+          verified
           state {
             aum
           }
@@ -105,6 +107,9 @@ async function resolveCuratorAddresses(name) {
 
   const data = await fetchGraphQL(CURATORS_QUERY, { search: normalized });
   const matches = data?.curators?.items ?? [];
+  const match = matches.find((curator) => curator.name?.toLowerCase() === normalized.toLowerCase())
+    ?? matches.find((curator) => curator.name?.toLowerCase().includes(normalized.toLowerCase()))
+    ?? matches[0];
   const addresses = [...new Set(
     matches.flatMap((curator) =>
       (curator?.addresses ?? []).map((address) => address?.address).filter(Boolean),
@@ -114,12 +119,20 @@ async function resolveCuratorAddresses(name) {
   if (addresses.length) {
     return {
       addresses,
-      aum: Number(matches[0]?.state?.aum ?? 0),
-      name: matches[0]?.name ?? normalized,
+      aum: Number(match?.state?.aum ?? 0),
+      name: match?.name ?? normalized,
+      image: match?.image ?? null,
+      verified: Boolean(match?.verified),
     };
   }
 
-  return { addresses: [], aum: 0, name: normalized };
+  return {
+    addresses: [],
+    aum: 0,
+    name: normalized,
+    image: match?.image ?? null,
+    verified: Boolean(match?.verified),
+  };
 }
 
 function vaultNameMatchesCurator(vaultName, curatorName) {
@@ -513,7 +526,13 @@ export async function fetchVaultHistory(vaultAddress, chainId, vaultVersion = 'v
 export async function fetchCuratorVaults(curatorInput) {
   const curator = await resolveCuratorAddresses(curatorInput);
   if (!curator.addresses.length) {
-    return { vaults: [], curatorAum: 0, curatorName: curator.name };
+    return {
+      vaults: [],
+      curatorAum: 0,
+      curatorName: curator.name,
+      curatorImage: curator.image,
+      curatorVerified: curator.verified,
+    };
   }
 
   const [v1Data, v2Data] = await Promise.all([
@@ -542,6 +561,8 @@ export async function fetchCuratorVaults(curatorInput) {
     vaults,
     curatorAum: curator.aum || vaultTvl,
     curatorName: curator.name,
+    curatorImage: curator.image,
+    curatorVerified: curator.verified,
   };
 }
 

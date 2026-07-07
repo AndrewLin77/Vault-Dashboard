@@ -3,6 +3,7 @@ import AllocationChart from './AllocationChart';
 import ActivityFeed from './ActivityFeed';
 import AddressLink from './AddressLink';
 import HistoryCharts from './HistoryCharts';
+import { ActivityListSkeleton } from './Skeleton';
 import {
   getAllocationRows,
   getTokenDecimals,
@@ -84,10 +85,15 @@ export default function VaultDetail({
         <div className="panel detail-block detail-block-activity">
           <h3>Recent activity</h3>
           {activityLoading ? (
-            <div className="loading-block">Loading transactions…</div>
+            <ActivityListSkeleton count={5} />
           ) : (
             <div className="activity-scroll">
-              <ActivityFeed activity={activity} decimals={decimals} chainId={vault.chain?.id} />
+              <ActivityFeed
+                activity={activity}
+                decimals={decimals}
+                symbol={symbol}
+                chainId={vault.chain?.id}
+              />
             </div>
           )}
         </div>

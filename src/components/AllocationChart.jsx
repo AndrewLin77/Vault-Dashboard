@@ -1,6 +1,4 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { formatCompactNumber } from '../lib/format';
-
 const COLORS = ['#f97316', '#14b8a6', '#60a5fa', '#e879f9', '#f43f5e', '#84cc16', '#c084fc'];
 
 /** Donut chart and list breakdown of a vault's market allocations. */
@@ -30,7 +28,6 @@ export default function AllocationChart({ allocations }) {
             <span className="allocation-swatch" style={{ background: COLORS[index % COLORS.length] }} />
             <div className="allocation-copy">
               <strong>{allocation.market}</strong>
-              <span>{formatCompactNumber(allocation.percentage)}%</span>
             </div>
             <strong>{allocation.percentage.toFixed(2)}%</strong>
           </div>
