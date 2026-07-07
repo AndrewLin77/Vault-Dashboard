@@ -573,11 +573,6 @@ a {
   text-decoration: underline;
 }
 
-.explorer-hint {
-  margin: 0.35rem 0 0;
-  font-size: 0.8rem;
-}
-
 .detail-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(100px, 1fr));

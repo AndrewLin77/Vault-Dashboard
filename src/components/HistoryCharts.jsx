@@ -12,6 +12,16 @@ function formatChartDate(timestampMs) {
   });
 }
 
+function formatChartTickDate(timestampMs) {
+  return new Date(Number(timestampMs)).toLocaleDateString('en', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+const AXIS_TICK_STYLE = { fill: '#94a3b8', fontSize: 10 };
+const AXIS_LINE_STYLE = { stroke: 'rgba(148, 163, 184, 0.2)' };
+
 function HistoryMiniChart({ points, color, valueFormatter, chartKey, average }) {
   if (!points?.length) {
     return <div className="empty-state history-empty">No history returned.</div>;
@@ -19,15 +29,28 @@ function HistoryMiniChart({ points, color, valueFormatter, chartKey, average }) 
 
   return (
     <div className="history-mini-chart">
-      <ResponsiveContainer width="100%" height={140}>
-        <LineChart key={chartKey} data={points}>
+      <ResponsiveContainer width="100%" height={168}>
+        <LineChart key={chartKey} data={points} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
           <XAxis
             dataKey="timestampMs"
             type="number"
             domain={['dataMin', 'dataMax']}
-            hide
+            tickFormatter={formatChartTickDate}
+            tick={AXIS_TICK_STYLE}
+            axisLine={AXIS_LINE_STYLE}
+            tickLine={false}
+            minTickGap={36}
+            dy={6}
           />
-          <YAxis hide domain={['auto', 'auto']} />
+          <YAxis
+            tickFormatter={valueFormatter}
+            tick={AXIS_TICK_STYLE}
+            axisLine={false}
+            tickLine={false}
+            width={56}
+            tickCount={4}
+            domain={['auto', 'auto']}
+          />
           {Number.isFinite(average) ? (
             <ReferenceLine
               y={average}
