@@ -122,44 +122,65 @@ async function resolveCuratorAddresses(name) {
   return { addresses: [], aum: 0, name: normalized };
 }
 
+function vaultNameMatchesCurator(vaultName, curatorName) {
+  const vault = vaultName?.trim().toLowerCase() ?? '';
+  const curator = curatorName?.trim().toLowerCase() ?? '';
+  if (!vault || !curator) return false;
+  return vault === curator || vault.startsWith(`${curator} `);
+}
+
+const CURATOR_VAULT_FIELDS = `
+  address
+  chain {
+    id
+  }
+  name
+  symbol
+  listed
+  asset {
+    symbol
+    decimals
+  }
+  liquidity {
+    underlying
+    usd
+  }
+  state {
+    totalAssets
+    totalAssetsUsd
+    netApy
+    avgNetApy
+    allocation {
+      supplyAssets
+      supplyAssetsUsd
+      market {
+        marketId
+        loanAsset {
+          symbol
+        }
+        collateralAsset {
+          symbol
+        }
+      }
+    }
+  }
+`;
+
 const CURATOR_VAULTS_QUERY = `
   query CuratorVaults($addresses: [String!]!) {
     vaults(where: { curatorAddress_in: $addresses, listed: true }, first: 50) {
       items {
-        address
-        chain {
-          id
-        }
-        name
-        symbol
-        listed
-        asset {
-          symbol
-          decimals
-        }
-        liquidity {
-          underlying
-          usd
-        }
-        state {
-          totalAssets
-          totalAssetsUsd
-          netApy
-          avgNetApy
-          allocation {
-            supplyAssets
-            supplyAssetsUsd
-            market {
-              marketId
-              loanAsset {
-                symbol
-              }
-              collateralAsset {
-                symbol
-              }
-            }
-          }
-        }
+        ${CURATOR_VAULT_FIELDS}
+      }
+    }
+  }
+`;
+
+const CURATOR_VAULTS_SEARCH_QUERY = `
+  query CuratorVaultsSearch($search: String!) {
+    vaults(where: { search: $search, listed: true }, first: 50) {
+      items {
+        ${CURATOR_VAULT_FIELDS}
       }
     }
   }
@@ -500,9 +521,19 @@ export async function fetchCuratorVaults(curatorInput) {
     fetchGraphQL(CURATOR_VAULTS_V2_QUERY, { addresses: curator.addresses }),
   ]);
 
+  let v1Items = v1Data?.vaults?.items ?? [];
+  const v2Items = v2Data?.vaultV2s?.items ?? [];
+
+  if (v1Items.length === 0 && v2Items.length === 0 && curator.name) {
+    const searchData = await fetchGraphQL(CURATOR_VAULTS_SEARCH_QUERY, { search: curator.name });
+    v1Items = (searchData?.vaults?.items ?? []).filter((vault) =>
+      vaultNameMatchesCurator(vault.name, curator.name),
+    );
+  }
+
   const vaults = mergeCuratorVaults(
-    v1Data?.vaults?.items ?? [],
-    v2Data?.vaultV2s?.items ?? [],
+    v1Items,
+    v2Items,
   );
 
   const vaultTvl = vaults.reduce((sum, vault) => sum + Number(vault.state?.totalAssetsUsd ?? 0), 0);

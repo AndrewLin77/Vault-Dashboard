@@ -1,4 +1,5 @@
 import { formatCompactNumber, formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
+import { getChainLabel } from '../lib/explorer';
 import { getTokenDecimals, getTokenSymbol, getVaultApy, getVaultLiquidity } from '../lib/morpho';
 
 /** Clickable vault summary showing TVL, APY, liquidity, and market count. */
@@ -25,7 +26,7 @@ export default function VaultCard({ vault, onClick }) {
           </div>
           <div className="vault-card-tags">
             {vault.vaultVersion === 'v2' ? <span className="vault-tag">V2</span> : null}
-            {chainId ? <span className="vault-tag">Chain {chainId}</span> : null}
+            {chainId ? <span className="vault-tag">{getChainLabel(chainId)}</span> : null}
           </div>
         </div>
 

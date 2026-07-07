@@ -11,7 +11,7 @@ import {
   getVaultLiquidity,
 } from '../lib/morpho';
 import { formatPercent, formatTokenAmount, formatUsd } from '../lib/format';
-import { getExplorerName } from '../lib/explorer';
+import { getChainLabel, getExplorerName } from '../lib/explorer';
 
 /** Full vault view with allocations chart, activity feed, and explorer link. */
 export default function VaultDetail({
@@ -37,23 +37,12 @@ export default function VaultDetail({
 
   return (
     <section className="vault-detail-view">
-      <nav className="detail-nav">
-        <Link to={backTo} className="back-button">
-          ← {curatorName ? `${curatorName} vaults` : 'Back to vaults'}
-        </Link>
-        <div className="breadcrumb">
-          {curatorName ? <span>{curatorName}</span> : null}
-          {curatorName ? <span className="breadcrumb-sep">/</span> : null}
-          <span>{vault.name}</span>
-        </div>
-      </nav>
-
       <header className="panel detail-hero">
         <div className="detail-hero-copy">
           <div className="detail-hero-tags">
             <span className="vault-symbol">{vault.symbol ?? symbol}</span>
             {vault.vaultVersion === 'v2' ? <span className="vault-tag">Vault V2</span> : null}
-            {vault.chain?.id ? <span className="vault-tag">Chain {vault.chain.id}</span> : null}
+            {vault.chain?.id ? <span className="vault-tag">{getChainLabel(vault.chain.id)}</span> : null}
           </div>
           <h1>{vault.name}</h1>
           <p className="vault-address-full">

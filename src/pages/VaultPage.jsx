@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import VaultDetail from '../components/VaultDetail';
+import { usePageTitle } from '../context/PageTitleContext';
 import { useCuratorVaults } from '../hooks/useCuratorVaults';
 import { useVaultActivity } from '../hooks/useVaultActivity';
 import { normalizeVaultActivity } from '../lib/morpho';
@@ -9,6 +10,7 @@ import { curatorPath, decodeCuratorSlug } from '../lib/routes';
 /** Vault detail page — resolves vault from URL params and loads its activity feed. */
 export default function VaultPage() {
   const { curatorSlug, chainId, vaultAddress } = useParams();
+  const { setVaultName } = usePageTitle();
   const curatorQuery = decodeCuratorSlug(curatorSlug);
 
   const vaultsQuery = useCuratorVaults(curatorQuery);
@@ -20,6 +22,11 @@ export default function VaultPage() {
       item.address?.toLowerCase() === vaultAddress?.toLowerCase()
       && String(item.chain?.id) === String(chainId),
   ) ?? null;
+
+  useEffect(() => {
+    setVaultName(vault?.name ?? '');
+    return () => setVaultName('');
+  }, [vault?.name, setVaultName]);
 
   const activityQuery = useVaultActivity(vault);
   const activity = useMemo(
