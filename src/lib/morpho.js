@@ -163,6 +163,8 @@ const CURATOR_VAULT_FIELDS = `
     totalAssetsUsd
     netApy
     avgNetApy
+    fee
+    feeRecipient
     allocation {
       supplyAssets
       supplyAssetsUsd
@@ -224,6 +226,10 @@ const CURATOR_VAULTS_V2_QUERY = `
         forceDeallocatableLiquidityUsd
         netApy
         avgNetApy
+        performanceFee
+        managementFee
+        performanceFeeRecipient
+        managementFeeRecipient
         caps {
           items {
             id
@@ -343,11 +349,59 @@ function vaultKey(vault) {
   return `${vault.chain?.id ?? 'unknown'}-${vault.address?.toLowerCase()}`;
 }
 
+/** Normalize fee fields from V1/V2 vault API items. */
+function normalizeVaultFees(item, version) {
+  if (version === 'v2') {
+    return {
+      performanceFee: Number(item.performanceFee ?? 0),
+      managementFee: Number(item.managementFee ?? 0),
+      performanceFeeRecipient: item.performanceFeeRecipient ?? null,
+      managementFeeRecipient: item.managementFeeRecipient ?? null,
+    };
+  }
+
+  return {
+    performanceFee: Number(item.state?.fee ?? 0),
+    managementFee: null,
+    performanceFeeRecipient: item.state?.feeRecipient ?? null,
+    managementFeeRecipient: null,
+  };
+}
+
+function isZeroAddress(address) {
+  return !address || /^0x0+$/i.test(address);
+}
+
+/** Build display rows for vault fee UI. */
+export function getVaultFeeRows(vault) {
+  const fees = vault?.fees;
+  if (!fees) return [];
+
+  const rows = [
+    {
+      label: 'Performance fee',
+      rate: fees.performanceFee,
+      recipient: isZeroAddress(fees.performanceFeeRecipient) ? null : fees.performanceFeeRecipient,
+    },
+  ];
+
+  if (vault.vaultVersion === 'v2') {
+    rows.push({
+      label: 'Management fee',
+      rate: fees.managementFee ?? 0,
+      recipient: isZeroAddress(fees.managementFeeRecipient) ? null : fees.managementFeeRecipient,
+    });
+  }
+
+  return rows;
+}
+
 /** Add vaultVersion and flatten V1 liquidity onto state for consistent access. */
 function normalizeVaultV1Item(item) {
   return {
     ...item,
     vaultVersion: 'v1',
+    fees: normalizeVaultFees(item, 'v1'),
     state: {
       ...item.state,
       liquidityAssets: item.liquidity?.underlying,
@@ -394,6 +448,7 @@ function normalizeVaultV2Item(item) {
     symbol: item.symbol,
     listed: item.listed,
     asset: item.asset,
+    fees: normalizeVaultFees(item, 'v2'),
     state: {
       totalAssets: item.totalAssets,
       totalAssetsUsd: item.totalAssetsUsd,

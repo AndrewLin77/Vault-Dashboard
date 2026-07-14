@@ -3,6 +3,7 @@ import AllocationChart from './AllocationChart';
 import ActivityFeed from './ActivityFeed';
 import AddressLink from './AddressLink';
 import HistoryCharts from './HistoryCharts';
+import VaultFees from './VaultFees';
 import { ActivityListSkeleton } from './Skeleton';
 import {
   getAllocationRows,
@@ -76,6 +77,11 @@ export default function VaultDetail({
       </header>
 
       <HistoryCharts vault={vault} />
+
+      <section className="panel detail-block">
+        <h3>Fees</h3>
+        <VaultFees vault={vault} />
+      </section>
 
       <div className="detail-columns">
         <div className="panel detail-block">
